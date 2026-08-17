@@ -58,7 +58,11 @@ app.get("/rooms", async (req, res) => {
   res.json(result);
 });
 
-
+app.post("/rooms", async (req, res) => {
+  const roomData = req.body;
+  const result = await roomCollection.insertOne(roomData);
+  res.status(201).json(result);
+});
 
 async function run() {
   await client.connect();
