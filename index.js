@@ -27,6 +27,11 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
+app.get("/rooms", async (req, res) => {
+  const result = await roomCollection.find().toArray();
+  res.json(result);
+});
+
 
 
 async function run() {
