@@ -1,7 +1,7 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 dotenv.config();
 
@@ -62,6 +62,32 @@ app.post("/rooms", async (req, res) => {
   const roomData = req.body;
   const result = await roomCollection.insertOne(roomData);
   res.status(201).json(result);
+});
+
+app.get("/rooms/:id", async (req, res) => {
+  const { id } = req.params;
+  const result = await roomCollection.findOne({ _id: new ObjectId(id) });
+
+  res.json(result);
+});
+
+app.delete("/rooms/:id", async (req, res) => {
+  const { id } = req.params;
+
+  if (!ObjectId.isValid(id)) {
+    return res.status(400).json({ error: "Invalid Room ID format" });
+  }
+
+  const result = await roomCollection.deleteOne({ _id: new ObjectId(id) });
+
+  if (result.deletedCount === 0) {
+    return res.status(404).json({ error: "Room not found" });
+  }
+
+  res.json({
+    message: "Room deleted successfully",
+    deletedCount: result.deletedCount,
+  });
 });
 
 async function run() {
