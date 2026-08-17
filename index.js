@@ -28,7 +28,33 @@ app.get("/", (req, res) => {
 });
 
 app.get("/rooms", async (req, res) => {
-  const result = await roomCollection.find().toArray();
+  const { search, floor, maxPrice } = req.query;
+  const query = {};
+
+  if (search && search.trim() !== "") {
+    const searchRegex = { $regex: search.trim(), $options: "i" };
+    query.$or = [
+      { name: searchRegex },
+      { shortDescription: searchRegex },
+      { amenities: searchRegex },
+    ];
+  }
+
+  if (floor && floor !== "all") {
+    const floorNumber = floor.replace(/\D/g, "");
+
+    if (floorNumber) {
+      query.floor = { $regex: floorNumber, $options: "i" };
+    } else {
+      query.floor = floor;
+    }
+  }
+
+  if (maxPrice && !isNaN(Number(maxPrice))) {
+    query.hourlyRate = { $lte: Number(maxPrice) };
+  }
+
+  const result = await roomCollection.find(query).toArray();
   res.json(result);
 });
 
