@@ -71,6 +71,33 @@ app.get("/rooms/:id", async (req, res) => {
   res.json(result);
 });
 
+app.patch("/rooms/:id", async (req, res) => {
+  const { id } = req.params;
+
+  if (!ObjectId.isValid(id)) {
+    return res.status(400).json({ error: "Invalid Room ID format" });
+  }
+
+  const updatedData = { ...req.body };
+  delete updatedData._id;
+
+  const filter = { _id: new ObjectId(id) };
+  const updateDoc = {
+    $set: updatedData,
+  };
+
+  const result = await roomCollection.updateOne(filter, updateDoc);
+
+  if (result.matchedCount === 0) {
+    return res.status(404).json({ error: "Room not found" });
+  }
+
+  res.json({
+    message: "Room updated successfully",
+    modifiedCount: result.modifiedCount,
+  });
+});
+
 app.delete("/rooms/:id", async (req, res) => {
   const { id } = req.params;
 
